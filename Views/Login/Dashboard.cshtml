@@ -1,0 +1,50 @@
+@{
+    ViewData["Title"] = "Dashboard";
+}
+@using System;
+@model Comment  
+<div class="container text-right">
+    <h1 class="display-4">Welcome @ViewBag.CurrentUser.FirstName</h1>
+</div>
+<partial name="MessageFormPartial" />
+<div class="container bg-light mt-3">
+    <h1 class="display-4">Previous Posts</h1>
+    @foreach (Message msg in @ViewBag.AllMessages)
+    {
+        <div class="row mb-3 p-2 border-bottom">
+            <div class="col-7 border" style="min-height: 12rem;">
+                <p>Message:</p>
+                <h5>@msg.MessageBody</h5>
+                <p>Posted By @msg.Creator.FirstName, @msg.CreatedAt.ToString()</p>
+                @if(msg.Creator == ViewBag.CurrentUser && (msg.CreatedAt.AddMinutes(30) > DateTime.Now)) //post can be deleted by user if it was made in the last 30 minutes.
+                {
+                    <a href="/delete/@msg.MessageId"><button class="btn btn-danger text-right">Delete Post</button></a>
+                }
+            </div>
+            @if(@msg.ImgUrl != null)
+            {
+                <div class="col-4 text-center">
+                    <a href="@msg.ImgUrl"><img src="@msg.ImgUrl" alt="Uh oh, URL Broken" style="max-height: 10rem; padding: 1rem;"></a>
+                </div>
+            }
+        </div>
+        <div class="container bg-secondary p-2 mb-5">
+            <h5>Comments on Post</h5>
+            @foreach (Comment c in @msg.CommentsOnPost)
+            {
+                <p class="ml-3"><strong> @c.CommentBody --- @c.UserWhoCommented.FirstName, @c.CreatedAt.ToString()</p>
+            }
+            <form action="/postcomment" method="post">
+                <div class='form-group'>
+                    <input class="form-control" asp-for="CommentBody" placeholder= "Enter a comment!">
+                    <span asp-validation-for="CommentBody" class="text-danger"></span>
+                </div>
+                <div class='form-group'>
+                    <input class="form-control" asp-for="MessageId" type="hidden" value="@msg.MessageId">
+                </div> 
+                <button type="submit" class="btn btn-primary">Post Comment</button>
+            </form>
+        </div>
+
+    }
+</div>
